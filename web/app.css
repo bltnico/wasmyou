@@ -13,12 +13,22 @@
   font-family: "Roboto", sans-serif;
 }
 
+html {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  image-rendering: pixelated;
+  orientation: portrait;
+}
+
 body {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
+  min-height: -webkit-fill-available;
   margin: 0;
   padding: 0;
   background: var(--background-color);
@@ -127,11 +137,4 @@ body {
 
 #img-input:hover {
   cursor: pointer;
-}
-
-#colors div {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  margin: 10px;
 }

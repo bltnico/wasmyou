@@ -14,6 +14,12 @@ imgInputEl.addEventListener('change', () => {
     return;
   }
 
+  // 1MB in Bytes is 1,048,576
+  if (file.size > 1048576 * 5) {
+    alert('Very large image 😬');
+    return;
+  }
+
   root.style.setProperty('--alpha', 0);
   root.style.setProperty('--zoom', 5);
 
@@ -59,9 +65,10 @@ function getCommonColors(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
 
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const bytes = new Uint8Array(event.target.result);
-      resolve(findCommonColors(bytes));
+      const colors = await findCommonColors(bytes);
+      resolve(colors);
     }
 
     reader.readAsArrayBuffer(file);
@@ -76,5 +83,5 @@ function setColors(colors) {
   root.style.setProperty('--main-color', mainColor);
   root.style.setProperty('--text-color', mainColor);
   metaEl.setAttribute('content',  firstColor);
-  overlayEl.style.backgroundColor = firstColor.replace(/[^,]+(?=\))/, '0.2');
+  overlayEl.style.backgroundColor = firstColor.replace(/[^,]+(?=\))/, '0.3');
 }

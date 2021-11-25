@@ -19,27 +19,57 @@ type RGB struct {
 	Blue  uint8
 }
 
-func FindCommonColors(this js.Value, args []js.Value) interface{} {
-	sourceImage := getImageFromArgs(args)
-	colors := getDominantColors(sourceImage)
-
-	return js.ValueOf(colors)
+type ImageInfo struct {
+	Source image.Image
+	Width  int
+	Height int
 }
 
-func getImageFromArgs(args []js.Value) image.Image {
+func FindCommonColors(this js.Value, args []js.Value) interface{} {
+	imageInfo := getImageFromArgs(args)
+
+	handler := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		resolve := args[0]
+		go func() {
+			colors := getDominantColors(imageInfo.Source)
+			resolve.Invoke(js.ValueOf(colors))
+		}()
+
+		return nil
+	})
+
+	promiseConstructor := js.Global().Get("Promise")
+	return promiseConstructor.New(handler)
+}
+
+func getImageFromArgs(args []js.Value) ImageInfo {
+	var imageInfo ImageInfo
+
 	array := args[0]
 	inBuf := make([]uint8, array.Get("byteLength").Int())
 	js.CopyBytesToGo(inBuf, array)
 
 	reader := bytes.NewReader(inBuf)
-
 	sourceImage, _, err := image.Decode(reader)
 
 	if err != nil {
 		log.Fatal("Failed to load image", err)
 	}
 
-	return sourceImage
+	newReader := bytes.NewReader(inBuf)
+	imageConfig, _, configErr := image.DecodeConfig(newReader)
+
+	if configErr != nil {
+		log.Fatal("Failed to get image config", configErr)
+	}
+
+	imageInfo = ImageInfo{
+		Source: sourceImage,
+		Width:  imageConfig.Width,
+		Height: imageConfig.Height,
+	}
+
+	return imageInfo
 }
 
 func getDominantColors(image image.Image) []interface{} {
