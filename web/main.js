@@ -16,8 +16,11 @@ imgInputEl.addEventListener('change', () => {
 
   // 1MB in Bytes is 1,048,576
   if (file.size > 1048576 * 5) {
-    alert('Very large image 😬');
-    return;
+    const isOk = confirm('Very large image 😬 Continue ?');
+    if (!isOk) {
+      imgInputEl.value = '';
+      return;
+    }
   }
 
   root.style.setProperty('--alpha', 0);
